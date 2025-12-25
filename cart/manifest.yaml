@@ -1,27 +1,28 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: catalogue
+  name: cart
   namespace: roboshop
   labels:
     project: roboshop
     purpose: rsdemo
     tier: app
-    microname: catalogue
+    microname: cart
 data:
-  MONGO: "true"
-  MONGO_URL: "mongodb://mongodb:27017/catalogue"
+  CATALOGUE_HOST: "catalogue"
+  REDIS_HOST: "redis"
+  CATALOGUE_PORT: "8080"
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: catalogue
+  name: cart
   namespace: roboshop
   labels:
     project: roboshop
     purpose: rsdemo
     tier: app
-    microname: catalogue
+    microname: cart
 spec:
   replicas: 1
   selector:
@@ -29,18 +30,18 @@ spec:
       project: roboshop
       purpose: rsdemo
       tier: app
-      microname: catalogue
+      microname: cart
   template:
     metadata:
       labels:
         project: roboshop
         purpose: rsdemo
         tier: app
-        microname: catalogue
+        microname: cart
     spec:
       containers:
-        - name: catalogue
-          image: satyology/catalogueoptimized
+        - name: cart
+          image: satyology/cartoptimized
           resources:
             requests:
               cpu: "50m"
@@ -50,24 +51,24 @@ spec:
               memory: "256Mi"
           envFrom:
             - configMapRef:
-                name: catalogue
+                name: cart
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: catalogue
+  name: cart
   namespace: roboshop
   labels:
     project: roboshop
     purpose: rsdemo
     tier: app
-    microname: catalogue
+    microname: cart
 spec:
   selector:
     project: roboshop
     purpose: rsdemo
     tier: app
-    microname: catalogue
+    microname: cart
   ports:
     - protocol: TCP
       port: 8080
@@ -77,18 +78,18 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: catalogue
+  name: cart
   namespace: roboshop
   labels:
     project: roboshop
     purpose: rsdemo
     tier: app
-    microname: catalogue
+    microname: cart
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: catalogue
+    name: cart
   minReplicas: 1
   maxReplicas: 5
   metrics:

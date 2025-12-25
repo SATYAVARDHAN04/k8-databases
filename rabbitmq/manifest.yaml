@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmqsecret
+  namespace: roboshop
+  labels: 
+    project: roboshop
+    purpose: rsdemo
+    tier: messaging
+    microname: rabbitmq
+type: Opaque
+data:
+  RABBITMQ_DEFAULT_USER: "cm9ib3Nob3A="
+  RABBITMQ_DEFAULT_PASS: "cm9ib3Nob3AxMjM="
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: roboshop
+  labels:
+    project: roboshop
+    purpose: rsdemo
+    tier: messaging
+    microname: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      project: roboshop
+      purpose: rsdemo
+      tier: messaging
+      microname: rabbitmq
+  template:
+    metadata:
+      labels:
+        project: roboshop
+        purpose: rsdemo
+        tier: messaging
+        microname: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3
+          ports:
+            - containerPort: 5672
+          envFrom:
+            - secretRef:
+                name: rabbitmqsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: roboshop
+  labels:
+    project: roboshop
+    purpose: rsdemo
+    tier: messaging
+    microname: rabbitmq
+spec:
+  selector:
+    project: roboshop
+    purpose: rsdemo
+    tier: messaging
+    microname: rabbitmq
+  ports:
+    - protocol: TCP
+      port: 5672
+      targetPort: 5672
+  type: ClusterIP

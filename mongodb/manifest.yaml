@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: roboshop
+  labels:
+    project: roboshop
+    purpose: rsdemo
+    tier: database
+    microname: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      project: roboshop
+      purpose: rsdemo
+      tier: database
+      microname: mongodb
+  template:
+    metadata:
+      labels:
+        project: roboshop
+        purpose: rsdemo
+        tier: database
+        microname: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: satyology/mongodboptimized
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: roboshop
+  labels:
+    project: roboshop
+    purpose: rsdemo
+    tier: database
+    microname: mongodb
+spec:
+  selector:
+    project: roboshop
+    purpose: rsdemo
+    tier: database
+    microname: mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017

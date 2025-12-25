@@ -76,12 +76,12 @@ spec:
           volumeMounts:
             - name: redis-data
               mountPath: /data
-    volumeClaimTemplates:
-      - metadata:
-          name: redis-data
-        spec:
-          accessModes: ["ReadWriteOnce"]
-          storageClassName: "roboshop-ebs"
-          resources:
-            requests:
-              storage: 2Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "roboshop-ebs"
+        resources:
+          requests:
+            storage: 2Gi

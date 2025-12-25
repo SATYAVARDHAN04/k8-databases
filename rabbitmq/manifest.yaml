@@ -94,12 +94,12 @@ spec:
           volumeMounts:
             - name: rabbitmq-data
               mountPath: /var/lib/rabbitmq
-    volumeClaimTemplates:
-      - metadata:
-          name: rabbitmq-data
-        spec:
-          accessModes: ["ReadWriteOnce"]
-          storageClassName: "roboshop-ebs"
-          resources:
-            requests:
-              storage: 2Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: rabbitmq-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "roboshop-ebs"
+        resources:
+          requests:
+            storage: 2Gi

@@ -1,9 +1,52 @@
 apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-headless
+  namespace: roboshop
+  labels:
+    project: roboshop
+    purpose: rsdemo
+    tier: messaging
+    microname: rabbitmq
+spec:
+  selector:
+    project: roboshop
+    purpose: rsdemo
+    tier: messaging
+    microname: rabbitmq
+  ports:
+    - protocol: TCP
+      port: 5672
+      targetPort: 5672
+  clusterIP: None
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: roboshop
+  labels:
+    project: roboshop
+    purpose: rsdemo
+    tier: messaging
+    microname: rabbitmq
+spec:
+  selector:
+    project: roboshop
+    purpose: rsdemo
+    tier: messaging
+    microname: rabbitmq
+  ports:
+    - protocol: TCP
+      port: 5672
+      targetPort: 5672
+---
+apiVersion: v1
 kind: Secret
 metadata:
   name: rabbitmqsecret
   namespace: roboshop
-  labels: 
+  labels:
     project: roboshop
     purpose: rsdemo
     tier: messaging
@@ -14,7 +57,7 @@ data:
   RABBITMQ_DEFAULT_PASS: "cm9ib3Nob3AxMjM="
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: rabbitmq
   namespace: roboshop
@@ -24,6 +67,7 @@ metadata:
     tier: messaging
     microname: rabbitmq
 spec:
+  serviceName: rabbitmq-headless
   replicas: 1
   selector:
     matchLabels:
@@ -47,25 +91,15 @@ spec:
           envFrom:
             - secretRef:
                 name: rabbitmqsecret
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: rabbitmq
-  namespace: roboshop
-  labels:
-    project: roboshop
-    purpose: rsdemo
-    tier: messaging
-    microname: rabbitmq
-spec:
-  selector:
-    project: roboshop
-    purpose: rsdemo
-    tier: messaging
-    microname: rabbitmq
-  ports:
-    - protocol: TCP
-      port: 5672
-      targetPort: 5672
-  type: ClusterIP
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+      volumeClaimTemplates:
+        - metadata:
+            name: rabbitmq-data
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            storageClassName: "roboshop-ebs"
+            resources:
+              requests:
+                storage: 2Gi

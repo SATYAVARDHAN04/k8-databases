@@ -1,7 +1,7 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
-  name: mongodb
+  name: mongodb-headless
   namespace: roboshop
   labels:
     project: roboshop
@@ -9,24 +9,16 @@ metadata:
     tier: database
     microname: mongodb
 spec:
-  replicas: 1
   selector:
-    matchLabels:
-      project: roboshop
-      purpose: rsdemo
-      tier: database
-      microname: mongodb
-  template:
-    metadata:
-      labels:
-        project: roboshop
-        purpose: rsdemo
-        tier: database
-        microname: mongodb
-    spec:
-      containers:
-        - name: mongodb
-          image: satyology/mongodboptimized
+    project: roboshop
+    purpose: rsdemo
+    tier: database
+    microname: mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+  clusterIP: None
 ---
 apiVersion: v1
 kind: Service
@@ -48,3 +40,46 @@ spec:
     - protocol: TCP
       port: 27017
       targetPort: 27017
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: roboshop
+  labels:
+    project: roboshop
+    purpose: rsdemo
+    tier: database
+    microname: mongodb
+spec:
+  serviceName: mongodb-headless
+  replicas: 2
+  selector:
+    matchLabels:
+      project: roboshop
+      purpose: rsdemo
+      tier: database
+      microname: mongodb
+  template:
+    metadata:
+      labels:
+        project: roboshop
+        purpose: rsdemo
+        tier: database
+        microname: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: satyology/mongodboptimized
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+    volumeClaimTemplates:
+      - metadata:
+          name: mongodb-data
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          storageClassName: "roboshop-ebs"
+          resources:
+            requests:
+              storage: 2Gi
